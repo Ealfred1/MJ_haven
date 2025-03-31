@@ -122,7 +122,7 @@ export default function PropertiesPage() {
   const fetchFavorites = async () => {
     try {
       const favoritesData = await propertiesService.getFavorites()
-      const favoriteIds = favoritesData.map((fav) => fav.property.id)
+      const favoriteIds = favoritesData.map((fav) => fav?.property_details.id)
       setFavorites(favoriteIds)
     } catch (err) {
       console.error("Failed to fetch favorites:", err)
@@ -178,9 +178,9 @@ export default function PropertiesPage() {
       if (user) {
         // If user is logged in, use the API
         if (isFavorite) {
-          await propertiesService.addFavorite(propertyId)
+          await propertiesService.toggleFavorite(propertyId)
         } else {
-          await propertiesService.removeFavorite(propertyId)
+          await propertiesService.toggleFavorite(propertyId)
         }
         // Update favorites in state
         setFavorites(prev => 

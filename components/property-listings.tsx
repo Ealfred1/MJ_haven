@@ -84,7 +84,7 @@ export function PropertyListings({
   const fetchFavorites = async () => {
     try {
       const favoritesData = await propertiesService.getFavorites()
-      const favoriteIds = favoritesData.map((fav) => fav.property.id)
+      const favoriteIds = favoritesData.map((fav) => fav.property_details.id)
       setFavorites(favoriteIds)
     } catch (err) {
       console.error("Failed to fetch favorites:", err)
