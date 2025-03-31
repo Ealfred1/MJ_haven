@@ -27,6 +27,7 @@ export default function PropertyDetailPage() {
   const [similarProperties, setSimilarProperties] = useState<Property[]>([])
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [galleryInitialIndex, setGalleryInitialIndex] = useState(0)
+  const [selectedThumbnailIndex, setSelectedThumbnailIndex] = useState(0)
 
   useEffect(() => {
     const fetchPropertyData = async () => {
@@ -41,9 +42,14 @@ export default function PropertyDetailPage() {
 
         const propertyData = await propertiesService.getProperty(propertyId)
         setProperty(propertyData)
-        setIsFavorite(propertyData.is_favorited || false)
 
-        // Fetch similar properties
+        if (user) {
+          setIsFavorite(propertyData.is_favorited || false)
+        } else {
+          const isLocalFavorite = propertiesService.isPropertyFavorited(Number(propertyId))
+          setIsFavorite(isLocalFavorite)
+        }
+
         const filters: any = {
           property_type: propertyData.property_type,
         }
@@ -64,25 +70,30 @@ export default function PropertyDetailPage() {
     }
 
     fetchPropertyData()
-  }, [params.id, router, toast])
+  }, [params.id, router, toast, user])
+
+  // Sync local favorites to server after login
+  useEffect(() => {
+    if (user) {
+      propertiesService.syncLocalFavoritesToServer()
+    }
+  }, [user])
 
   const handleToggleFavorite = async () => {
-    if (!user) {
-      setIsLoginModalOpen(true)
-      return
-    }
-
     if (!property) return
 
     try {
       const result = await propertiesService.toggleFavorite(property.id)
-      setIsFavorite(result.action === "added")
+
+      // Determine if the property is now favorited based on the response
+      const newFavoriteState = result.id !== undefined || result.action === "added"
+      setIsFavorite(newFavoriteState)
+
       toast({
-        title: result.action === "added" ? "Added to favorites" : "Removed from favorites",
-        description:
-          result.action === "added"
-            ? `${property.title} has been added to your favorites`
-            : `${property.title} has been removed from your favorites`,
+        title: newFavoriteState ? "Added to favorites" : "Removed from favorites",
+        description: newFavoriteState
+          ? `${property.title} has been added to your favorites`
+          : `${property.title} has been removed from your favorites`,
       })
     } catch (err) {
       console.error("Failed to toggle favorite:", err)
@@ -121,6 +132,10 @@ export default function PropertyDetailPage() {
     setIsGalleryOpen(true)
   }
 
+  const handleThumbnailClick = (index: number) => {
+    setSelectedThumbnailIndex(index)
+  }
+
   if (isLoading) {
     return (
       <>
@@ -157,6 +172,12 @@ export default function PropertyDetailPage() {
   // Create an array of all image URLs for the gallery
   const galleryImages = [mainImageUrl, ...allImages.filter((img) => !img.is_main).map((img) => img.image_url)]
 
+  // Get the currently displayed main image based on selected thumbnail
+  const displayedMainImage =
+    selectedThumbnailIndex === 0
+      ? mainImageUrl
+      : allImages.filter((img) => !img.is_main)[selectedThumbnailIndex - 1]?.image_url || mainImageUrl
+
   return (
     <>
       <Navigation />
@@ -165,20 +186,23 @@ export default function PropertyDetailPage() {
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Header Section */}
           <div className="mb-6">
-            <button onClick={() => router.back()} className="flex items-center text-gray-600 hover:text-primary mb-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center text-[#374027] hover:text-primary font-semibold text-[16px] mb-4"
+            >
               <ArrowLeft className="h-4 w-4 mr-1" />
               <span>Back</span>
             </button>
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div>
-                <h1 className="text-3xl font-bold mb-1">{property.title}</h1>
-                <p className="text-gray-500">{property.address || property.location}</p>
+                <h1 className="text-[40px] tracking-tight text-[#1C1B20] font-bold mb-1">{property.title}</h1>
+                <p className="text-[#000929] font-medium text-[18px]">{property.address || property.location}</p>
               </div>
 
               <div className="flex mt-4 md:mt-0 gap-2">
                 <button
-                  className="flex items-center gap-1 px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                  className="flex items-center gap-1 px-4 py-2 bg-[#F6F9EA] w-[125px] h-[50px] justify-center rounded-[8px] border border-[#D6DDB9] hover:bg-gray-200 transition-colors"
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href)
                     toast({
@@ -192,8 +216,10 @@ export default function PropertyDetailPage() {
                 </button>
 
                 <button
-                  className={`flex items-center gap-1 px-4 py-2 rounded-md transition-colors ${
-                    isFavorite ? "bg-red-500 text-white hover:bg-red-600" : "bg-gray-100 hover:bg-gray-200"
+                  className={`flex items-center gap-1 px-4 py-2 w-[125px] h-[50px] justify-center rounded-[8px] transition-colors ${
+                    isFavorite
+                      ? "bg-red-500 text-white hover:bg-red-600"
+                      : "bg-[#F6F9EA] hover:bg-gray-200 border border-[#D6DDB9]"
                   }`}
                   onClick={handleToggleFavorite}
                 >
@@ -205,29 +231,44 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Gallery Section */}
-          <div className="bg-white rounded-lg overflow-hidden mb-8">
+          <div className="rounded-lg overflow-hidden mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <div className="md:col-span-2 cursor-pointer relative" onClick={() => openGallery(0)}>
+              <div className="md:col-span-2 relative">
                 <img
-                  src={mainImageUrl || "/placeholder.svg"}
+                  src={displayedMainImage || "/placeholder.svg"}
                   alt={property.title}
-                  className="w-full h-[400px] object-cover rounded-lg"
+                  className="w-full h-[400px] object-cover rounded-lg cursor-pointer"
+                  onClick={() => openGallery(selectedThumbnailIndex)}
                 />
               </div>
 
               <div className="grid grid-rows-2 gap-2">
-                {allImages
-                  .filter((img) => !img.is_main)
-                  .slice(0, 2)
-                  .map((image, index) => (
-                    <div key={image.id} className="cursor-pointer" onClick={() => openGallery(index + 1)}>
-                      <img
-                        src={image.image_url || "/placeholder.svg"}
-                        alt={`${property.title} ${index + 1}`}
-                        className="w-full h-[196px] object-cover rounded-lg"
-                      />
-                    </div>
-                  ))}
+                {/* Main image thumbnail */}
+                <div
+                  className={`cursor-pointer ${selectedThumbnailIndex === 0 ? "ring-2 ring-primary" : ""}`}
+                  onClick={() => handleThumbnailClick(0)}
+                >
+                  <img
+                    src={mainImageUrl || "/house.jpeg"}
+                    alt={`${property.title} main`}
+                    className="w-full h-[196px] object-cover rounded-lg"
+                  />
+                </div>
+
+                {/* Second thumbnail */}
+                {allImages.filter((img) => !img.is_main).length > 0 && (
+                  <div
+                    className={`cursor-pointer ${selectedThumbnailIndex === 1 ? "ring-2 ring-primary" : ""}`}
+                    onClick={() => handleThumbnailClick(1)}
+                  >
+                    <img
+                      src={allImages.filter((img) => !img.is_main)[0]?.image_url || "/placeholder.svg"}
+                      alt={`${property.title} 1`}
+                      className="w-full h-[196px] object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+
                 {allImages.filter((img) => !img.is_main).length > 2 && (
                   <button
                     className="absolute bottom-4 right-6 bg-white/80 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-white transition-colors"

@@ -57,6 +57,25 @@ export interface PaginatedResponse<T> {
   results: T[]
 }
 
+export interface FavoriteResponse {
+  id?: number
+  property_details?: {
+    id: number
+    title: string
+    property_type: string
+    price: string
+    duration: string
+    location: string
+    main_image_url: string
+  }
+  created_at?: string
+  detail?: string
+  action?: "added" | "removed"
+}
+
+// Local storage key for favorites
+const LOCAL_FAVORITES_KEY = "mj_local_favorites"
+
 export const propertiesService = {
   // Get all properties with optional filters
   getProperties: async (filters?: PropertyFilters): Promise<PaginatedResponse<Property>> => {
@@ -81,15 +100,106 @@ export const propertiesService = {
   },
 
   // Toggle favorite status for a property
-  toggleFavorite: async (propertyId: number): Promise<{ action: "added" | "removed" }> => {
-    const response = await api.post(`/api/users/favorites/toggle/${propertyId}/`)
-    return response.data
+  toggleFavorite: async (propertyId: number): Promise<FavoriteResponse> => {
+    try {
+      const token = localStorage.getItem("mj_token")
+
+      // If user is authenticated, use the API
+      if (token) {
+        const response = await api.post(`/api/users/favorites/toggle/${propertyId}/`)
+
+        // Handle both response formats
+        if (response.data.detail && response.data.detail.includes("removed")) {
+          return { detail: response.data.detail, action: "removed" }
+        } else {
+          return response.data
+        }
+      }
+      // Otherwise, use local storage
+      else {
+        const localFavorites = getLocalFavorites()
+
+        if (localFavorites.includes(propertyId)) {
+          // Remove from local favorites
+          const updatedFavorites = localFavorites.filter((id) => id !== propertyId)
+          localStorage.setItem(LOCAL_FAVORITES_KEY, JSON.stringify(updatedFavorites))
+          return { detail: "Property removed from favorites", action: "removed" }
+        } else {
+          // Add to local favorites
+          localFavorites.push(propertyId)
+          localStorage.setItem(LOCAL_FAVORITES_KEY, JSON.stringify(localFavorites))
+          return {
+            id: propertyId,
+            action: "added",
+            detail: "Property added to favorites",
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error)
+      throw error
+    }
+  },
+
+  // Check if a property is favorited
+  isPropertyFavorited: (propertyId: number): boolean => {
+    const token = localStorage.getItem("mj_token")
+
+    // For unauthenticated users, check local storage
+    if (!token) {
+      const localFavorites = getLocalFavorites()
+      return localFavorites.includes(propertyId)
+    }
+
+    // For authenticated users, this will be determined by the API response
+    return false
   },
 
   // Get favorite properties
   getFavorites: async (): Promise<{ id: number; property: Property }[]> => {
-    const response = await api.get("/api/users/favorites/")
-    return response.data
+    try {
+      const token = localStorage.getItem("mj_token")
+
+      // If user is authenticated, use the API
+      if (token) {
+        const response = await api.get("/api/users/favorites/")
+        return response.data
+      }
+      // Otherwise, return empty array (local favorites don't have full property data)
+      else {
+        return []
+      }
+    } catch (error) {
+      console.error("Error getting favorites:", error)
+      return []
+    }
   },
+
+  // Sync local favorites to server after login
+  syncLocalFavoritesToServer: async (): Promise<void> => {
+    const token = localStorage.getItem("mj_token")
+    if (!token) return
+
+    const localFavorites = getLocalFavorites()
+    if (localFavorites.length === 0) return
+
+    try {
+      // Add each local favorite to the server
+      for (const propertyId of localFavorites) {
+        await api.post(`/api/users/favorites/toggle/${propertyId}/`)
+      }
+
+      // Clear local favorites after syncing
+      localStorage.removeItem(LOCAL_FAVORITES_KEY)
+    } catch (error) {
+      console.error("Error syncing local favorites:", error)
+    }
+  },
+}
+
+// Helper function to get local favorites
+function getLocalFavorites(): number[] {
+  const favoritesJson = localStorage.getItem(LOCAL_FAVORITES_KEY)
+  return favoritesJson ? JSON.parse(favoritesJson) : []
 }
 

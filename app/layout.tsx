@@ -23,11 +23,12 @@ export default function RootLayout({
       <body className={plusJakartaSans.className}>
         <AuthProvider>
           <NotificationsProvider>
-        {children}
-        <Toaster />
+            {children}
+            <Toaster />
           </NotificationsProvider>
         </AuthProvider>
       </body>
     </html>
   )
 }
+

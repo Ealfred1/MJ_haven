@@ -44,11 +44,17 @@ export function PropertyCard({
   const [isToggling, setIsToggling] = useState(false)
   const { user } = useAuth()
   const { toast } = useToast()
+  const propertyId = typeof id === "string" ? Number.parseInt(id) : id
 
-  // Update local state if prop changes
+  // Check if property is in local favorites for unauthenticated users
   useEffect(() => {
-    setIsFavorite(initialIsFavorite)
-  }, [initialIsFavorite])
+    if (!user && !initialIsFavorite) {
+      const isLocalFavorite = propertiesService.isPropertyFavorited(propertyId)
+      setIsFavorite(isLocalFavorite)
+    } else {
+      setIsFavorite(initialIsFavorite)
+    }
+  }, [initialIsFavorite, propertyId, user])
 
   const formattedPrice = new Intl.NumberFormat("en-NG", {
     style: "currency",
@@ -62,24 +68,14 @@ export function PropertyCard({
     e.preventDefault()
     e.stopPropagation()
 
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to save properties to favorites",
-        variant: "destructive",
-      })
-      return
-    }
-
     if (isToggling) return
-
     setIsToggling(true)
 
     try {
-      const propertyId = typeof id === "string" ? Number.parseInt(id) : id
       const result = await propertiesService.toggleFavorite(propertyId)
 
-      const newFavoriteState = result.action === "added"
+      // Determine if the property is now favorited based on the response
+      const newFavoriteState = result.id !== undefined || result.action === "added"
       setIsFavorite(newFavoriteState)
 
       if (onFavoriteToggle) {
