@@ -105,68 +105,83 @@ export function PropertyCard({
   }
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+    <div
+      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+      style={{ width: "360px", height: "auto", maxWidth: "360px", maxHeight: "424px" }}
+    >
       <div className="relative">
         <Link href={`/properties/${id}`}>
           <img
             src={imageUrl || "/placeholder.svg?height=300&width=400"}
             alt={title}
-            className="w-full h-48 object-cover"
+            className="object-cover"
+            style={{
+              width: "352px",
+              height: "200px",
+              marginLeft: "8px",
+              marginTop: "8px",
+              borderTopLeftRadius: "8px",
+              borderTopRightRadius: "8px",
+            }}
           />
         </Link>
 
         {popular && (
-          <div className="absolute top-2 left-2 bg-primary text-white text-xs px-2 py-1 rounded">POPULAR</div>
+          <div className="absolute top-4 left-4 bg-primary text-white text-xs px-2 py-1 rounded flex items-center">
+            <span className="mr-1">•</span>
+            <span className="uppercase font-medium">Popular</span>
+          </div>
         )}
-
-        <button
-          className={`absolute top-2 right-2 p-1.5 rounded-full ${
-            isFavorite ? "bg-red-500 text-white" : "bg-white text-gray-500"
-          } ${isToggling ? "opacity-50" : ""}`}
-          onClick={handleFavoriteToggle}
-          disabled={isToggling}
-          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
-        >
-          <Heart className="h-4 w-4" fill={isFavorite ? "currentColor" : "none"} />
-        </button>
       </div>
 
       <div className="p-4">
-        <div className="flex justify-between items-start mb-2">
+        <div className="flex justify-between items-start">
           <div>
             <p className="text-lg font-bold text-primary">
-              {formattedPrice}
-              <span className="text-sm font-normal text-gray-500">/per day</span>
+              {formattedPrice} <span className="text-sm font-normal text-gray-500">/per day</span>
             </p>
           </div>
+          <button
+            className={`p-1.5 rounded-full ${
+              isFavorite ? "bg-red-50 text-red-500" : "bg-gray-50 text-gray-500"
+            } ${isToggling ? "opacity-50" : ""}`}
+            onClick={handleFavoriteToggle}
+            disabled={isToggling}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            style={{ width: "40px", height: "40px" }}
+          >
+            <Heart className="h-5 w-5 mx-auto" fill={isFavorite ? "currentColor" : "none"} />
+          </button>
         </div>
 
         <Link href={`/properties/${id}`}>
-          <h3 className="text-lg font-bold mb-1 hover:text-primary transition-colors">{title}</h3>
+          <h3 className="text-xl font-bold mt-2 hover:text-primary transition-colors">{title}</h3>
         </Link>
 
-        <p className="text-gray-500 text-sm mb-4">
+        <p className="text-gray-500 text-sm mt-1 mb-4">
           {address}, {area}, {city}
         </p>
 
-        <div className="flex items-center justify-between text-gray-500 text-sm">
-          <div className="flex items-center">
-            <Bed className="h-4 w-4 mr-1" />
-            <span>
-              {beds} {beds === 1 ? "Bed" : "Beds"}
-            </span>
-          </div>
+        <div className="border-t pt-4 mt-2">
+          <div className="flex items-center justify-between text-gray-700 text-sm">
+            <div className="flex items-center">
+              <Bed className="h-5 w-5 mr-2 text-gray-500" />
+              <span>
+                {beds} {beds === 1 ? "Bed" : "Beds"}
+              </span>
+            </div>
 
-          <div className="flex items-center">
-            <Bath className="h-4 w-4 mr-1" />
-            <span>
-              {baths} {baths === 1 ? "Bathroom" : "Bathrooms"}
-            </span>
-          </div>
+            <div className="flex items-center">
+              <Bath className="h-5 w-5 mr-2 text-gray-500" />
+              <span>
+                {baths} {baths === 1 ? "Bathroom" : "Bathrooms"}
+              </span>
+            </div>
 
-          <div className="flex items-center">
-            <Square className="h-4 w-4 mr-1" />
-            <span>{size}</span>
+            <div className="flex items-center">
+              <Square className="h-5 w-5 mr-2 text-gray-500" />
+              <span>{size}</span>
+            </div>
           </div>
         </div>
       </div>

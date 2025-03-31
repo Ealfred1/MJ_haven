@@ -19,12 +19,16 @@ export default function PropertiesPage() {
   const [priceRange, setPriceRange] = useState("₦200-₦500")
   const [propertyType, setPropertyType] = useState("House")
   const [currentPage, setCurrentPage] = useState(1)
-  const [properties, setProperties] = useState<Property[]>([])
+  const [allProperties, setAllProperties] = useState<Property[]>([])
+  const [displayedProperties, setDisplayedProperties] = useState<Property[]>([])
   const [favorites, setFavorites] = useState<number[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [totalPages, setTotalPages] = useState(1)
   const { toast } = useToast()
+
+  const ITEMS_PER_PAGE = 6
+  const MAX_PAGES = 10
 
   // Initialize filters from URL params if available
   useEffect(() => {
@@ -40,7 +44,18 @@ export default function PropertiesPage() {
 
     fetchProperties()
     fetchFavorites()
-  }, [searchParams, currentPage])
+  }, [searchParams])
+
+  // Update displayed properties when page changes or all properties change
+  useEffect(() => {
+    updateDisplayedProperties()
+  }, [currentPage, allProperties])
+
+  const updateDisplayedProperties = () => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    setDisplayedProperties(allProperties.slice(startIndex, endIndex))
+  }
 
   const fetchProperties = async () => {
     setIsLoading(true)
@@ -62,10 +77,8 @@ export default function PropertiesPage() {
         minPrice = 2000000
       }
 
-      const filters: PropertyFilters = {
-        page: currentPage,
-        page_size: 6,
-      }
+      // Create filters without pagination parameters
+      const filters: PropertyFilters = {}
 
       if (searchTerm) filters.search = searchTerm
       if (location !== "Lagos, Nigeria") filters.location = location
@@ -75,8 +88,15 @@ export default function PropertiesPage() {
 
       const response = await propertiesService.getProperties(filters)
 
-      setProperties(response.results)
-      setTotalPages(Math.ceil(response.count / 6))
+      // Store all properties
+      setAllProperties(response.results)
+
+      // Calculate total pages based on the total count
+      const calculatedTotalPages = Math.ceil(response.results.length / ITEMS_PER_PAGE)
+      setTotalPages(Math.min(calculatedTotalPages, MAX_PAGES))
+
+      // Reset to page 1 when filters change
+      setCurrentPage(1)
     } catch (err) {
       console.error("Failed to fetch properties:", err)
       setError("Failed to load properties")
@@ -101,12 +121,10 @@ export default function PropertiesPage() {
   }
 
   const handleSearch = () => {
-    setCurrentPage(1)
     fetchProperties()
   }
 
   const handleFilterChange = () => {
-    setCurrentPage(1)
     fetchProperties()
   }
 
@@ -145,7 +163,7 @@ export default function PropertiesPage() {
     city: property.location.split(",")[2] || "",
     beds: property.bedrooms,
     baths: property.bathrooms,
-    size: `${property.area} m²`,
+    size: property.area ? `${property.area} m²` : "N/A",
     imageUrl: property.main_image_url || "/placeholder.svg?height=300&width=400",
     isFavorite: favorites.includes(property.id),
   })
@@ -275,7 +293,7 @@ export default function PropertiesPage() {
                 Try again
               </button>
             </div>
-          ) : properties.length === 0 ? (
+          ) : allProperties.length === 0 ? (
             <EmptyState
               icon={<Home className="h-8 w-8 text-gray-400" />}
               title="No properties found"
@@ -289,7 +307,7 @@ export default function PropertiesPage() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {properties.map((property) => (
+                {displayedProperties.map((property) => (
                   <PropertyCard
                     key={property.id}
                     {...mapPropertyToCardProps(property)}

@@ -3,7 +3,7 @@ import { Shield, DollarSign, Clock } from "lucide-react"
 export function FeaturesSection() {
   return (
     <section className="pt-16 pb-32">
-      <div className="container mx-auto px-4">
+      <div className="container max-w-[1128px] mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-2">What we offer you</h2>
           <p className="text-gray-500">Some of our picked properties near your location.</p>

@@ -18,7 +18,8 @@ export function PropertyListings({
   showTitle = true,
   showViewMore = true,
 }: PropertyListingsProps) {
-  const [properties, setProperties] = useState<Property[]>([])
+  const [allProperties, setAllProperties] = useState<Property[]>([])
+  const [displayedProperties, setDisplayedProperties] = useState<Property[]>([])
   const [favorites, setFavorites] = useState<number[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,24 +28,40 @@ export function PropertyListings({
   const [filters, setFilters] = useState<PropertyFilters>(initialFilters)
   const { toast } = useToast()
 
+  const ITEMS_PER_PAGE = 6
+  const MAX_PAGES = 10
+
   useEffect(() => {
     fetchProperties()
     fetchFavorites()
-  }, [currentPage, filters])
+  }, [filters])
+
+  // Update displayed properties when page changes or all properties change
+  useEffect(() => {
+    updateDisplayedProperties()
+  }, [currentPage, allProperties])
 
   const fetchProperties = async () => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await propertiesService.getProperties({
-        ...filters,
-        page: currentPage,
-        page_size: 6,
-      })
+      // Remove pagination parameters - get all properties at once
+      const filtersWithoutPagination = { ...filters }
+      delete filtersWithoutPagination.page
+      delete filtersWithoutPagination.page_size
 
-      setProperties(response.results)
-      setTotalPages(Math.ceil(response.count / 6))
+      const response = await propertiesService.getProperties(filtersWithoutPagination)
+
+      // Store all properties
+      setAllProperties(response.results)
+
+      // Calculate total pages based on the total count
+      const calculatedTotalPages = Math.ceil(response.results.length / ITEMS_PER_PAGE)
+      setTotalPages(Math.min(calculatedTotalPages, MAX_PAGES))
+
+      // Reset to page 1 when filters change
+      setCurrentPage(1)
     } catch (err) {
       console.error("Failed to fetch properties:", err)
       setError("Failed to load properties")
@@ -56,6 +73,12 @@ export function PropertyListings({
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const updateDisplayedProperties = () => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    setDisplayedProperties(allProperties.slice(startIndex, endIndex))
   }
 
   const fetchFavorites = async () => {
@@ -93,14 +116,14 @@ export function PropertyListings({
     city: property.location.split(",")[2] || "",
     beds: property.bedrooms,
     baths: property.bathrooms,
-    size: `${property.area} m²`,
+    size: property.area ? `${property.area} m²` : "N/A",
     imageUrl: property.main_image_url || "/placeholder.svg?height=300&width=400",
     isFavorite: favorites.includes(property.id),
   })
 
   return (
     <section className="py-16">
-      <div className="container mx-auto px-4">
+      <div className="container max-w-[1128px] mx-auto px-4">
         {showTitle && (
           <div className="flex justify-between items-center mb-8">
             <div>
@@ -139,14 +162,14 @@ export function PropertyListings({
               Try again
             </button>
           </div>
-        ) : properties.length === 0 ? (
+        ) : allProperties.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
             <p className="text-lg text-gray-500">No properties found.</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {properties.map((property) => (
+            <div className="grid max-w-[1128px] mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayedProperties.map((property) => (
                 <PropertyCard
                   key={property.id}
                   {...mapPropertyToCardProps(property)}
