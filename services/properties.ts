@@ -6,21 +6,36 @@ export interface PropertyImage {
   is_main: boolean
 }
 
+export interface PropertyFeature {
+  id: number
+  name: string
+  description: string
+}
+
 export interface Property {
   id: number
   title: string
+  description?: string
   property_type: string
+  property_type_display?: string
   price: string
   duration: string
   duration_display: string
   location: string
+  address?: string
+  latitude?: number | null
+  longitude?: number | null
   bedrooms: number
   bathrooms: number
-  area: string
+  area: string | null
   is_available: boolean
-  main_image?: PropertyImage
   main_image_url?: string
+  images?: PropertyImage[]
+  features?: PropertyFeature[]
+  is_favorited?: boolean
   created_at: string
+  updated_at?: string
+  owner?: number
 }
 
 export interface PropertyFilters {
@@ -60,7 +75,7 @@ export const propertiesService = {
   },
 
   // Get a single property by ID
-  getProperty: async (id: number): Promise<Property> => {
+  getProperty: async (id: number | string): Promise<Property> => {
     const response = await api.get(`/api/properties/${id}/`)
     return response.data
   },

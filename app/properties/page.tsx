@@ -164,7 +164,7 @@ export default function PropertiesPage() {
     beds: property.bedrooms,
     baths: property.bathrooms,
     size: property.area ? `${property.area} m²` : "N/A",
-    imageUrl: property.main_image_url || "/placeholder.svg?height=300&width=400",
+    imageUrl: property.main_image_url || "/house.jpeg",
     isFavorite: favorites.includes(property.id),
   })
 
