@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Transform API user data to our User type
       const formattedUser = {
         id: userData.id.toString(),
-        name: `${userData.first_name} ${userData.last_name}`.trim(),
+        name: userData.full_name,
         email: userData.email,
         phone: userData.phone || "",
         profileImage: userData.profile_image_url || "",
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (name: string, email: string, password: string) => {
     setIsLoading(true)
     try {
-      // Split name into first_name and last_name
+      // Split name into first_name and last_name 
       const nameParts = name.split(" ")
       const first_name = nameParts[0]
       const last_name = nameParts.slice(1).join(" ")
@@ -108,8 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await api.post("/api/users/users/", {
         email,
         password,
-        first_name,
-        last_name,
+        full_name: name
       })
 
       // Login after successful registration

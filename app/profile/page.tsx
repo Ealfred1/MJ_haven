@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import { PropertyCard } from "@/components/property-card"
-import { Pencil, Phone } from "lucide-react"
+import { Mail, Pencil, Phone } from "lucide-react"
 
 // Sample saved properties data
 const savedProperties = [
@@ -225,8 +225,8 @@ export default function ProfilePage() {
                         <div>
                           <h1 className="text-2xl font-bold">{user.name}</h1>
                           <div className="flex items-center text-gray-500 mt-1">
-                            <Phone className="h-4 w-4 mr-1" />
-                            <span>{user.phone || "+234 7087654234"}</span>
+                            <Mail className="h-4 w-4 mr-1" />
+                            <span>{user.email || "N/A"}</span>
                           </div>
                         </div>
                         <button

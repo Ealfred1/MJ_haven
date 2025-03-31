@@ -106,7 +106,7 @@ export function PropertyCard({
 
   return (
     <div
-      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+      className="bg-white rounded-lg overflow-hidden border-[1.5px] border-[#F0EFFB]"
       style={{ width: "360px", height: "auto", maxWidth: "360px", maxHeight: "424px" }}
     >
       <div className="relative">
