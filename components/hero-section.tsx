@@ -7,11 +7,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
 
 export function HeroSection() {
-  const [location, setLocation] = useState("Lagos, Nigeria")
-  const [date, setDate] = useState<Date>()
+  const [date, setDate] = useState()
 
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center">
@@ -28,36 +26,27 @@ export function HeroSection() {
         <h1 className="text-4xl md:text-5xl lg:text-[58px] font-bold text-[#FEFEFE] mb-4">
           Experience Luxury Shortlet Stays with MJ Haven
         </h1>
-        <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
+        <p className="text-[20px] font-medium max-w-[448px] text-[#FEFEFE] mb-8 mx-auto">
           Find and book premium short-term rentals with ease.
         </p>
 
-        <div className="bg-white p-4 md:p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                Location
-              </label>
-              <input
-                id="location"
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="Enter location"
-              />
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="w-full md:w-auto text-left">
+              <h2 className="text-[16px] font-medium text-[#1C1B20B2] mb-1">Location</h2>
+              <div className="text-[18px] text-[#1C1B20] font-bold">Lagos, Nigeria</div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Select Move-in Date</label>
+            <div className="w-full md:w-auto text-left">
+              <h2 className="text-[16px] font-medium text-[#1C1B20B2] mb-1">When</h2>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={cn("w-full justify-start text-left font-normal", !date && "text-muted-foreground")}
+                    className={cn("justify-start border-none ring-0 outline-0 px-0 text-[#1C1B20] font-bold text-left", !date && "text-muted-foreground")}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : "Select date"}
+                    {date ? format(date, "PPP") : "Select Move-in Date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -65,19 +54,32 @@ export function HeroSection() {
                 </PopoverContent>
               </Popover>
             </div>
-          </div>
 
-          <div className="mt-4">
-            <Link
-              href="/properties"
-              className="w-full bg-primary hover:bg-primary-600 text-white py-3 px-4 rounded-md transition-colors inline-block text-center"
+            <Button 
+              className="w-full h-[56px] rounded-[8px] md:w-[209px] bg-[#66773B] hover:bg-[#5A6B42] text-white"
             >
               Browse Properties
-            </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Counters section */}
+        <div className="flex justify-center mt-16">
+          <div className="flex items-center gap-8 text-white">
+            <div className="text-center">
+              <h3 className="text-5xl font-bold">50k+</h3>
+              <p className="text-xl mt-2">Renters</p>
+            </div>
+            
+            <div className="h-16 w-px bg-white/30"></div>
+            
+            <div className="text-center">
+              <h3 className="text-5xl font-bold">10k+</h3>
+              <p className="text-xl mt-2">Shortlet</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
   )
 }
-
