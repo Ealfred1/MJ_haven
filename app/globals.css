@@ -75,3 +75,11 @@ body {
   @apply bg-background text-foreground;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
+
+.bg-grad {
+  background: linear-gradient(180deg, #E9EDDA -18.43%, #FFFFFF 100%);
+}
+
+.bg-grad2 {
+  background: linear-gradient(180.82deg, #FFFFFF 0.7%, #E9EDDA 124.67%);
+}

@@ -6,10 +6,10 @@ const testimonials = [
   {
     id: 1,
     quote:
-      "Estatery is the platform I go to on almost a daily basis for 2nd home and vacation condo shopping, or to just look at dream homes in new areas. Thanks for fun home shopping and comparative analyzing, MJ's Haven!",
+      "MJ's Haven is the platform I go to on almost a daily basis for 2nd home and vacation condo shopping, or to just look at dream homes in new areas. Thanks for fun home shopping and comparative analyzing, MJ's Haven!",
     name: "Mira Culos",
     role: "Renter",
-    avatar: "/placeholder.svg?height=100&width=100",
+    avatar: "/img1.svg",
   },
   {
     id: 2,
@@ -17,15 +17,15 @@ const testimonials = [
       "As a property manager, MJ's Haven has simplified my workflow tremendously. The platform is intuitive and the customer service is exceptional.",
     name: "John Smith",
     role: "Property Manager",
-    avatar: "/placeholder.svg?height=100&width=100",
+    avatar: "/img2.svg",
   },
   {
     id: 3,
     quote:
-      "I've been a landlord for over 10 years and MJ's Haven is by far the best platform I've used. It's helped me find reliable tenants quickly and efficiently.",
-    name: "Sarah Johnson",
-    role: "Landlord",
-    avatar: "/placeholder.svg?height=100&width=100",
+      "I've been a hunter for so long, anytime I need a place to stay, I always come to MJ's Haven. I've been using it for years and it's never let me down.",
+    name: "Sung Jinwoo",
+    role: "Hunter",
+    avatar: "/img3.jpg",
   },
 ]
 
@@ -33,18 +33,18 @@ export function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0)
 
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
+    <section className="py-16 bg-grad">
+      <div className="container max-w-[746px] mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-2">Testimonials</h2>
-          <p className="text-gray-500">See what our property managers, landlords, and tenants have to say</p>
+          <h2 className="text-[40px] text-[#000929] font-bold mb-2">Testimonials</h2>
+          <p className="text-[#1C1B20B2] text-center font-medium mx-auto max-w-[406px] text-[18px]">See what our property managers, landlords, and tenants have to say</p>
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <p className="text-lg italic text-gray-700 mb-6">"{testimonials[activeIndex].quote}"</p>
+          <div className="rounded-lg">
+            <p className="text-lg font-medium text-center text-[#000929] mb-6">"{testimonials[activeIndex].quote}"</p>
 
-            <div className="flex items-center">
+            <div className="flex justify-center items-center">
               <img
                 src={testimonials[activeIndex].avatar || "/placeholder.svg"}
                 alt={testimonials[activeIndex].name}
@@ -57,7 +57,7 @@ export function TestimonialsSection() {
             </div>
           </div>
 
-          <div className="flex justify-center mt-8 space-x-2">
+          <div className="flex w-full justify-center mt-8 space-x-2">
             {testimonials.map((_, index) => (
               <button
                 key={index}

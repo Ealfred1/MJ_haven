@@ -122,7 +122,7 @@ export function PropertyListings({
   })
 
   return (
-    <section className="py-16">
+    <section className="py-16 bg-grad2">
       <div className="container max-w-[1128px] mx-auto px-4">
         {showTitle && (
           <div className="flex justify-between items-center mb-8">
