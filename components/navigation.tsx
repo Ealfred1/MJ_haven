@@ -63,22 +63,22 @@ export function Navigation() {
 
   return (
     <>
-      <header className="bg-white py-4 px-4 md:px-8 border-b sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
+      <header className="bg-white flex h-[96px] border-b border-b-[#F0EFFB] sticky top-0 z-50">
+        <div className="container max-w-[1324px] mx-auto flex items-center justify-between">
           <Logo />
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/about" className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors">
               About Us
             </Link>
-            <Link href="/properties" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/properties" className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors">
               Explore Properties
             </Link>
-            <Link href="/contact" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/contact" className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors">
               Contact
             </Link>
-            <Link href="/faqs" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/faqs" className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors">
               FAQs
             </Link>
           </nav>
@@ -139,13 +139,13 @@ export function Navigation() {
               <>
                 <button
                   onClick={() => setIsLoginModalOpen(true)}
-                  className="text-sm font-medium hover:text-primary transition-colors"
+                  className="text-[16px] font-semibold text-[#606D93] hover:text-primary transition-colors"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => setIsSignupModalOpen(true)}
-                  className="bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="bg-primary w-[118px] h-[48px] hover:bg-primary-600 text-white px-4 py-2 rounded-[8px] text-sm font-medium transition-colors"
                 >
                   Sign up
                 </button>
@@ -337,4 +337,3 @@ export function Navigation() {
     </>
   )
 }
-

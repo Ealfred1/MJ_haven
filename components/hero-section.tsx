@@ -17,15 +17,15 @@ export function HeroSection() {
     <section className="relative min-h-[80vh] flex items-center justify-center">
       <div className="absolute inset-0 z-0">
         <img
-          src="/placeholder.svg?height=1080&width=1920"
+          src="/house.jpeg"
           alt="Luxury apartment interior"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-[#2F3523] bg-opacity-80"></div>
       </div>
 
-      <div className="container mx-auto px-4 z-10 text-center">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+      <div className="container w-full max-w-[811px] mx-auto px-4 z-10 text-center">
+        <h1 className="text-4xl md:text-5xl lg:text-[58px] font-bold text-[#FEFEFE] mb-4">
           Experience Luxury Shortlet Stays with MJ Haven
         </h1>
         <p className="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
