@@ -9,6 +9,7 @@ import { useSearchParams } from "next/navigation"
 import { propertiesService, type Property, type PropertyFilters } from "@/services/properties"
 import { useToast } from "@/hooks/use-toast"
 import { EmptyState } from "@/components/empty-state"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function PropertiesPage() {
   const searchParams = useSearchParams()
@@ -26,9 +27,11 @@ export default function PropertiesPage() {
   const [error, setError] = useState<string | null>(null)
   const [totalPages, setTotalPages] = useState(1)
   const { toast } = useToast()
+  const { user } = useAuth()
 
   const ITEMS_PER_PAGE = 6
   const MAX_PAGES = 10
+  const LOCAL_STORAGE_FAVORITES_KEY = "mj_local_favorites"
 
   // Initialize filters from URL params if available
   useEffect(() => {
@@ -43,8 +46,14 @@ export default function PropertiesPage() {
     if (searchParam) setSearchTerm(searchParam)
 
     fetchProperties()
-    fetchFavorites()
-  }, [searchParams])
+    
+    // Load favorites based on auth state
+    if (user) {
+      fetchFavorites() // Fetch from API if logged in
+    } else {
+      loadLocalFavorites() // Load from localStorage if not logged in
+    }
+  }, [searchParams, user])
 
   // Update displayed properties when page changes or all properties change
   useEffect(() => {
@@ -120,6 +129,25 @@ export default function PropertiesPage() {
     }
   }
 
+  const loadLocalFavorites = () => {
+    try {
+      const localFavorites = localStorage.getItem(LOCAL_STORAGE_FAVORITES_KEY)
+      if (localFavorites) {
+        setFavorites(JSON.parse(localFavorites))
+      }
+    } catch (err) {
+      console.error("Failed to load local favorites:", err)
+    }
+  }
+
+  const saveLocalFavorites = (favoriteIds: number[]) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_FAVORITES_KEY, JSON.stringify(favoriteIds))
+    } catch (err) {
+      console.error("Failed to save local favorites:", err)
+    }
+  }
+
   const handleSearch = () => {
     fetchProperties()
   }
@@ -145,12 +173,58 @@ export default function PropertiesPage() {
   }
 
   // Handle favorite toggle
-  const handleFavoriteToggle = (propertyId: number, isFavorite: boolean) => {
-    if (isFavorite) {
-      setFavorites((prev) => [...prev, propertyId])
-    } else {
-      setFavorites((prev) => prev.filter((id) => id !== propertyId))
+  const handleFavoriteToggle = async (propertyId: number, isFavorite: boolean) => {
+    try {
+      if (user) {
+        // If user is logged in, use the API
+        if (isFavorite) {
+          await propertiesService.addFavorite(propertyId)
+        } else {
+          await propertiesService.removeFavorite(propertyId)
+        }
+        // Update favorites in state
+        setFavorites(prev => 
+          isFavorite 
+            ? [...prev, propertyId] 
+            : prev.filter(id => id !== propertyId)
+        )
+      } else {
+        // If user is not logged in, use localStorage
+        const updatedFavorites = isFavorite
+          ? [...favorites, propertyId]
+          : favorites.filter(id => id !== propertyId)
+        
+        setFavorites(updatedFavorites)
+        saveLocalFavorites(updatedFavorites)
+        
+        toast({
+          title: isFavorite ? "Added to favorites" : "Removed from favorites",
+          description: "Sign in to sync your favorites across devices",
+          duration: 3000,
+        })
+      }
+      
+      // Update property in the allProperties array
+      setAllProperties(prev => 
+        prev.map(property => 
+          property.id === propertyId 
+            ? { ...property, is_favorite: isFavorite } 
+            : property
+        )
+      )
+    } catch (err) {
+      console.error("Failed to update favorite:", err)
+      toast({
+        title: "Error",
+        description: `Failed to ${isFavorite ? 'add to' : 'remove from'} favorites.`,
+        variant: "destructive",
+      })
     }
+  }
+
+  // Check if a property is favorited, either by API or local storage
+  const isPropertyFavorited = (property: Property) => {
+    return property.is_favorite || favorites.includes(property.id)
   }
 
   // Map API properties to PropertyCard props
@@ -165,7 +239,7 @@ export default function PropertiesPage() {
     baths: property.bathrooms,
     size: property.area ? `${property.area} m²` : "N/A",
     imageUrl: property.main_image_url || "/house.jpeg",
-    isFavorite: favorites.includes(property.id),
+    isFavorite: isPropertyFavorited(property),
   })
 
   return (

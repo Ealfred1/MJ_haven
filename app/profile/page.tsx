@@ -437,7 +437,7 @@ export default function ProfilePage() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
                 className="bg-white rounded-xl shadow-lg overflow-hidden"
-              >
+              > 
                 {isLoadingTransactions ? (
                   <div className="flex justify-center py-12">
                     <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
