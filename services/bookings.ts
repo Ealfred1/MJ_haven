@@ -10,7 +10,7 @@ export interface Booking {
   check_out_date: string
   guests: number
   total_price: string
-  status: "pending" | "confirmed" | "cancelled" | "completed"
+  status: "pending" | "confirmed" | "cancelled" | "canceled" | "completed"
   payment_status: "pending" | "paid" | "failed"
   payment_method: string
   payment_reference: string | null
@@ -81,7 +81,7 @@ export const bookingsService = {
   // Get all transactions (paid bookings)
   getTransactions: async (): Promise<Booking[]> => {
     const response = await api.get("/api/bookings/transactions/")
-    return response.data
+    return response.data.results
   },
 }
 
