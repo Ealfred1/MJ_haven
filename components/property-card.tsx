@@ -139,8 +139,6 @@ export function PropertyCard({
       onMouseLeave={handleMouseLeave}
       className="relative group"
       style={{
-        width: "360px",
-        height: "auto",
         maxWidth: "360px",
         maxHeight: "424px",
         transition: "transform 0.3s ease, box-shadow 0.3s ease",

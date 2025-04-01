@@ -21,11 +21,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isPolling, setIsPolling] = useState(false)
   const { user } = useAuth()
 
   const fetchNotifications = async () => {
     if (!user) return
 
+    // Don't start a new fetch if one is already in progress
+    if (isLoading) return
+    
     setIsLoading(true)
     setError(null)
 
@@ -44,15 +48,29 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    if (user) {
-      fetchNotifications()
+    // Reset state when user changes
+    if (!user) {
+      setNotifications([])
+      setUnreadCount(0)
+      setIsLoading(false)
+      setError(null)
+      return
+    }
 
-      // Set up polling for new notifications (every 30 seconds)
+    // Initial fetch
+    fetchNotifications()
+
+    // Set up polling for new notifications (every 30 seconds)
+    if (!isPolling) {
+      setIsPolling(true)
       const interval = setInterval(() => {
         fetchNotifications()
       }, 30000)
 
-      return () => clearInterval(interval)
+      return () => {
+        clearInterval(interval)
+        setIsPolling(false)
+      }
     }
   }, [user])
 
@@ -116,4 +134,3 @@ export function useNotifications() {
   }
   return context
 }
-

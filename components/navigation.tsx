@@ -286,7 +286,7 @@ export function Navigation() {
                     >
                       Notifications
                       {unreadCount > 0 && (
-                        <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                        <span className="bg-red-500 text-white h-[10px] flex items-center justify-center text-[10px] rounded-full">
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
