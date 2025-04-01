@@ -26,7 +26,7 @@ export default function NotificationsPage() {
       // Refresh notifications when the page loads
       refreshNotifications()
     }
-  }, [user, isLoading, refreshNotifications])
+  }, [])
 
   const handleDismiss = async (id: number) => {
     await markAsRead(id)
