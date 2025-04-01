@@ -63,25 +63,39 @@ export function Navigation() {
 
   return (
     <>
-      <header className="bg-white flex h-[96px] border-b border-b-[#F0EFFB] sticky top-0 z-50">
+      <header className="bg-white flex h-[96px] border-b border-b-[#F0EFFB] sticky top-0 z-40">
         <div className="container max-w-[1324px] mx-auto flex items-center justify-between">
           <Logo />
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/about" className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors">
-              About Us
-            </Link>
-            <Link href="/properties" className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors">
-              Explore Properties
-            </Link>
-            <Link href="/contact" className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors">
-              Contact
-            </Link>
-            <Link href="/faqs" className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors">
-              FAQs
-            </Link>
-          </nav>
+          {/* Desktop Navigation - Only show for non-authenticated users */}
+          {!user && (
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link
+                href="/about"
+                className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors"
+              >
+                About Us
+              </Link>
+              <Link
+                href="/properties"
+                className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors"
+              >
+                Explore Properties
+              </Link>
+              <Link
+                href="/contact"
+                className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors"
+              >
+                Contact
+              </Link>
+              <Link
+                href="/faqs"
+                className="text-[16px] text-[#000929] font-medium hover:text-primary transition-colors"
+              >
+                FAQs
+              </Link>
+            </nav>
+          )}
 
           {/* Desktop Auth Buttons or User Profile */}
           <div className="hidden md:flex items-center space-x-4">
@@ -203,45 +217,50 @@ export function Navigation() {
 
           <nav className="p-4">
             <ul className="space-y-4">
-              <li>
-                <Link
-                  href="/about"
-                  className="block text-gray-800 hover:text-primary"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/properties"
-                  className="block text-gray-800 hover:text-primary"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Explore Properties
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="block text-gray-800 hover:text-primary"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/faqs"
-                  className="block text-gray-800 hover:text-primary"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  FAQs
-                </Link>
-              </li>
+              {!user && (
+                <>
+                  <li>
+                    <Link
+                      href="/about"
+                      className="block text-gray-800 hover:text-primary"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      About Us
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/properties"
+                      className="block text-gray-800 hover:text-primary"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Explore Properties
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/contact"
+                      className="block text-gray-800 hover:text-primary"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Contact
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/faqs"
+                      className="block text-gray-800 hover:text-primary"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      FAQs
+                    </Link>
+                  </li>
+                </>
+              )}
+
               {user && (
                 <>
-                  <li className="border-t pt-4 mt-4">
+                  <li>
                     <Link
                       href="/profile"
                       className="block text-gray-800 hover:text-primary"
@@ -337,3 +356,4 @@ export function Navigation() {
     </>
   )
 }
+

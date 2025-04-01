@@ -81,7 +81,7 @@ export const bookingsService = {
   // Get all transactions (paid bookings)
   getTransactions: async (): Promise<Booking[]> => {
     const response = await api.get("/api/bookings/transactions/")
-    return response.data
+    return response.data.results
   },
 }
 

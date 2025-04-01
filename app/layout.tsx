@@ -5,6 +5,8 @@ import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
 import { NotificationsProvider } from "@/contexts/notifications-context"
 import { Toaster } from "@/components/ui/toaster"
+import { Sidebar } from "@/components/sidebar"
+
 
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"] })
 
@@ -23,7 +25,8 @@ export default function RootLayout({
       <body className={plusJakartaSans.className}>
         <AuthProvider>
           <NotificationsProvider>
-            {children}
+            <Sidebar />
+            <main className="lg:pl-[280px] transition-all duration-300">{children}</main>
             <Toaster />
           </NotificationsProvider>
         </AuthProvider>
