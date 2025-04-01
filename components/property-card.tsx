@@ -78,9 +78,9 @@ export function PropertyCard({
       const newFavoriteState = result.id !== undefined || result.action === "added"
       setIsFavorite(newFavoriteState)
 
-      if (onFavoriteToggle) {
-        onFavoriteToggle(propertyId, newFavoriteState)
-      }
+      // if (onFavoriteToggle) {
+      //   onFavoriteToggle(propertyId, newFavoriteState)
+      // }
 
       toast({
         title: newFavoriteState ? "Added to favorites" : "Removed from favorites",
