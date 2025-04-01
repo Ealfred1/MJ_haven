@@ -124,7 +124,7 @@ export function Sidebar() {
                     />
                     <span>{item.name}</span>
 
-                    {item.badge && (
+                    {item.badge !== undefined && (
                       <span
                         className={`ml-auto px-2 py-0.5 text-xs rounded-full ${
                           isActive ? "bg-white text-primary" : "bg-red-500 text-white"
