@@ -113,7 +113,17 @@ export default function PropertyDetailPage() {
 
     if (!property) return
 
-    router.push(`/bookings/confirm?propertyId=${property.id}&nights=1`)
+    // Get current date for default check-in date (tomorrow)
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowStr = tomorrow.toISOString().split("T")[0]
+
+    // Default to 3 days stay
+    const checkoutDate = new Date(tomorrow)
+    checkoutDate.setDate(checkoutDate.getDate() + 3)
+    const checkoutStr = checkoutDate.toISOString().split("T")[0]
+
+    router.push(`/bookings/confirm?propertyId=${property.id}&checkIn=${tomorrowStr}&checkOut=${checkoutStr}`)
   }
 
   const formatPrice = (price: string | number) => {
@@ -231,41 +241,57 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Gallery Section */}
-          <div className="rounded-lg overflow-hidden mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="mb-8 p-0">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-[10px]">
+              {/* Main large image */}
               <div className="md:col-span-2 relative">
-                <img
-                  src={displayedMainImage || "/placeholder.svg"}
-                  alt={property.title}
-                  className="w-full h-[400px] object-cover rounded-lg cursor-pointer"
+                <div
+                  className="cursor-pointer"
                   onClick={() => openGallery(selectedThumbnailIndex)}
-                />
+                  style={{ height: "556px", borderRadius: "12px", overflow: "hidden" }}
+                >
+                  <img
+                    src={displayedMainImage || "/placeholder.svg"}
+                    alt={property.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-rows-2 gap-2">
+              {/* Thumbnails container */}
+              <div className="grid grid-rows-2 gap-[10px] p-[10px]">
                 {/* Main image thumbnail */}
                 <div
                   className={`cursor-pointer ${selectedThumbnailIndex === 0 ? "ring-2 ring-primary" : ""}`}
                   onClick={() => handleThumbnailClick(0)}
+                  style={{ width: "342px", height: "260px", borderRadius: "8px", overflow: "hidden" }}
                 >
                   <img
-                    src={mainImageUrl || "/house.jpeg"}
+                    src={mainImageUrl || "/placeholder.svg"}
                     alt={`${property.title} main`}
-                    className="w-full h-[196px] object-cover rounded-lg"
+                    className="w-full h-full object-cover"
                   />
                 </div>
 
                 {/* Second thumbnail */}
-                {allImages.filter((img) => !img.is_main).length > 0 && (
+                {allImages.filter((img) => !img.is_main).length > 0 ? (
                   <div
                     className={`cursor-pointer ${selectedThumbnailIndex === 1 ? "ring-2 ring-primary" : ""}`}
                     onClick={() => handleThumbnailClick(1)}
+                    style={{ width: "342px", height: "260px", borderRadius: "8px", overflow: "hidden" }}
                   >
                     <img
                       src={allImages.filter((img) => !img.is_main)[0]?.image_url || "/placeholder.svg"}
                       alt={`${property.title} 1`}
-                      className="w-full h-[196px] object-cover rounded-lg"
+                      className="w-full h-full object-cover"
                     />
+                  </div>
+                ) : (
+                  <div
+                    className="cursor-pointer"
+                    style={{ width: "342px", height: "260px", borderRadius: "8px", overflow: "hidden" }}
+                  >
+                    <img src="/placeholder.svg" alt="Placeholder" className="w-full h-full object-cover" />
                   </div>
                 )}
 
