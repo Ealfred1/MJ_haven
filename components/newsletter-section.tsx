@@ -37,12 +37,16 @@ export function NewsletterSection() {
   }
 
   return (
-    <section className="py-16 bg-[#374027]">
+    <section className="py-10 sm:py-16 bg-[#374027]">
       <div className="container mx-auto px-4">
         <div className="max-w-[544px] mx-auto text-center">
-          <p className="text-[#E9EDDA] text-[24px] font-bold mb-2">No Spam Promise</p>
-          <h2 className="text-[40px] font-bold text-white mb-4">Get more update from us</h2>
-          <p className="text-[#D3D5DA] font-[400] text-[16px] mb-8">Discover ways to increase your home's value and get listed. No Spam.</p>
+          <p className="text-[18px] sm:text-[20px] md:text-[24px] text-[#E9EDDA] font-bold mb-2">No Spam Promise</p>
+          <h2 className="text-[28px] sm:text-[32px] md:text-[40px] font-bold text-white mb-4">
+            Get more update from us
+          </h2>
+          <p className="text-[14px] sm:text-[16px] text-[#D3D5DA] font-[400] mb-6 sm:mb-8">
+            Discover ways to increase your home's value and get listed. No Spam.
+          </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 mb-4">
             <input
@@ -61,7 +65,7 @@ export function NewsletterSection() {
             </button>
           </form>
 
-          <p className="text-primary-200 text-sm">Join 10,000+ other users in our MJ's Haven community.</p>
+          <p className="text-primary-200 text-xs sm:text-sm">Join 10,000+ other users in our MJ's Haven community.</p>
         </div>
       </div>
     </section>

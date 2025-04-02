@@ -122,19 +122,23 @@ export function PropertyListings({
   })
 
   return (
-    <section className="py-16 bg-grad2">
+    <section className="py-10 sm:py-16 bg-grad2">
       <div className="container max-w-[1128px] mx-auto px-4">
         {showTitle && (
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <div>
-              <h2 className="text-[40px] tracking-tight text-[#000929] font-bold mb-2">Based on your location</h2>
-              <p className="text-[#000929] font-medium text-[18px]">Some of our picked properties near you location.</p>
+              <h2 className="text-[28px] sm:text-[32px] md:text-[40px] tracking-tight text-[#000929] font-bold mb-2">
+                Based on your location
+              </h2>
+              <p className="text-[#000929] font-medium text-[16px] sm:text-[18px]">
+                Some of our picked properties near you location.
+              </p>
             </div>
 
             {showViewMore && (
               <Link
                 href="/properties"
-                className="bg-primary w-[239px] h-[56px] items-center justify-center hover:bg-primary-600 text-white px-4 py-2 rounded-[8px] text-sm font-medium transition-colors hidden md:flex"
+                className="bg-primary w-full sm:w-auto mt-4 md:mt-0 h-[48px] sm:h-[56px] items-center justify-center hover:bg-primary-600 text-white px-4 py-2 rounded-[8px] text-sm font-medium transition-colors hidden md:flex"
               >
                 Browse more Properties
               </Link>
@@ -143,7 +147,7 @@ export function PropertyListings({
         )}
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[...Array(6)].map((_, index) => (
               <div key={index} className="bg-white rounded-lg overflow-hidden shadow-md h-80 animate-pulse">
                 <div className="w-full h-48 bg-gray-200"></div>
@@ -168,7 +172,7 @@ export function PropertyListings({
           </div>
         ) : (
           <>
-            <div className="grid max-w-[1128px] mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid max-w-[1128px] mx-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {displayedProperties.map((property) => (
                 <PropertyCard
                   key={property.id}
@@ -180,7 +184,7 @@ export function PropertyListings({
 
             {totalPages > 1 && (
               <div className="flex justify-center mt-8">
-                <nav className="flex items-center space-x-1">
+                <nav className="flex flex-wrap items-center justify-center gap-1">
                   <button
                     onClick={() => paginate(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
@@ -220,7 +224,7 @@ export function PropertyListings({
           <div className="mt-8 text-center md:hidden">
             <Link
               href="/properties"
-              className="bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors inline-block"
+              className="bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors inline-block w-full sm:w-auto"
             >
               Browse more Properties
             </Link>

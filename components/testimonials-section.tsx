@@ -33,22 +33,26 @@ export function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0)
 
   return (
-    <section className="py-16 bg-grad">
+    <section className="py-10 sm:py-16 bg-grad">
       <div className="container max-w-[746px] mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-[40px] text-[#000929] font-bold mb-2">Testimonials</h2>
-          <p className="text-[#1C1B20B2] text-center font-medium mx-auto max-w-[406px] text-[18px]">See what our property managers, landlords, and tenants have to say</p>
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-[28px] sm:text-[32px] md:text-[40px] text-[#000929] font-bold mb-2">Testimonials</h2>
+          <p className="text-[#1C1B20B2] text-center font-medium mx-auto max-w-[406px] text-[16px] sm:text-[18px]">
+            See what our property managers, landlords, and tenants have to say
+          </p>
         </div>
 
         <div className="max-w-3xl mx-auto">
           <div className="rounded-lg">
-            <p className="text-lg font-medium text-center text-[#000929] mb-6">"{testimonials[activeIndex].quote}"</p>
+            <p className="text-base sm:text-lg font-medium text-center text-[#000929] mb-6">
+              "{testimonials[activeIndex].quote}"
+            </p>
 
             <div className="flex justify-center items-center">
               <img
                 src={testimonials[activeIndex].avatar || "/placeholder.svg"}
                 alt={testimonials[activeIndex].name}
-                className="w-12 h-12 rounded-full object-cover mr-4"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover mr-4"
               />
               <div>
                 <p className="font-bold">{testimonials[activeIndex].name}</p>
@@ -57,12 +61,12 @@ export function TestimonialsSection() {
             </div>
           </div>
 
-          <div className="flex w-full justify-center mt-8 space-x-2">
+          <div className="flex w-full justify-center mt-6 sm:mt-8 space-x-2">
             {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setActiveIndex(index)}
-                className={`w-12 h-12 rounded-full overflow-hidden border-2 ${
+                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 ${
                   activeIndex === index ? "border-primary" : "border-transparent"
                 }`}
               >

@@ -77,7 +77,7 @@ export function Sidebar() {
       >
         {/* Toggle button */}
         <button
-          className="absolute -right-12 top-4 bg-white rounded-full p-2 shadow-md lg:hidden"
+          className="absolute right-[1] top-4 bg-white rounded-full p-2 shadow-md lg:hidden"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <X className="h-5 w-5 text-gray-600" /> : <ChevronRight className="h-5 w-5 text-gray-600" />}
@@ -155,7 +155,7 @@ export function Sidebar() {
       {/* Mobile toggle button when sidebar is closed */}
       {!isOpen && isMobile && (
         <button
-          className="fixed bottom-6 left-6 z-40 bg-primary text-white p-3 rounded-full shadow-lg"
+          className="fixed bottom-6 left-6 z-40 bg-primary hidden text-white p-3 rounded-full shadow-lg"
           onClick={() => setIsOpen(true)}
         >
           <Menu className="h-6 w-6" />
