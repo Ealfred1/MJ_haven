@@ -244,13 +244,14 @@ export default function PropertyDetailPage() {
             </div>
           </div>
 
-          {/* Gallery Section */}
+          {/* Gallery Section - UPDATED for Mobile */}
           <div className="mb-6 sm:mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-[10px]">
+            {/* Desktop View */}
+            <div className="hidden md:grid md:grid-cols-3 gap-[10px]">
               {/* Main large image */}
-              <div className="md:col-span-2 relative">
+              <div className="col-span-2 relative">
                 <div
-                  className="cursor-pointer relative w-full h-[250px] sm:h-[350px] md:h-[556px] rounded-lg overflow-hidden"
+                  className="cursor-pointer relative w-full h-[400px] rounded-lg overflow-hidden"
                   onClick={() => openGallery(selectedThumbnailIndex)}
                 >
                   <img
@@ -258,39 +259,28 @@ export default function PropertyDetailPage() {
                     alt={property.title}
                     className="w-full h-full object-cover"
                   />
-
-                  {/* Mobile view gallery button */}
-                  <button
-                    className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-white transition-colors md:hidden"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setIsGalleryOpen(true)
-                    }}
-                  >
-                    <Camera className="h-4 w-4" />
-                    <span>View all</span>
-                  </button>
                 </div>
               </div>
 
               {/* Thumbnails container - Only visible on tablet and desktop */}
-              <div className="hidden md:grid grid-rows-2 gap-[10px]">
-                {/* Main image thumbnail */}
-                <div
-                  className={`cursor-pointer relative w-full h-full rounded-lg overflow-hidden ${
-                    selectedThumbnailIndex === 0 ? "ring-2 ring-primary" : ""
-                  }`}
-                  onClick={() => handleThumbnailClick(0)}
-                >
-                  <img
-                    src={mainImageUrl || "/placeholder.svg"}
-                    alt={`${property.title} main`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+              <div className="flex flex-col gap-[10px] h-[400px]">
+                {/* Grid to make both thumbnails the same height */}
+                <div className="grid grid-rows-2 gap-[10px] h-full">
+                  {/* Main image thumbnail */}
+                  <div
+                    className={`cursor-pointer relative w-full h-full rounded-lg overflow-hidden ${
+                      selectedThumbnailIndex === 0 ? "ring-2 ring-primary" : ""
+                    }`}
+                    onClick={() => handleThumbnailClick(0)}
+                  >
+                    <img
+                      src={mainImageUrl || "/placeholder.svg"}
+                      alt={`${property.title} main`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                {/* Second thumbnail */}
-                {allImages.filter((img) => !img.is_main).length > 0 ? (
+                  {/* Second thumbnail */}
                   <div
                     className={`cursor-pointer relative w-full h-full rounded-lg overflow-hidden ${
                       selectedThumbnailIndex === 1 ? "ring-2 ring-primary" : ""
@@ -298,25 +288,107 @@ export default function PropertyDetailPage() {
                     onClick={() => handleThumbnailClick(1)}
                   >
                     <img
+                      src={
+                        allImages.filter((img) => !img.is_main)[0]?.image_url || "/placeholder.svg?height=200&width=300"
+                      }
+                      alt={`${property.title} 1`}
+                      className="w-full h-full object-cover"
+                    />
+                    
+                    {/* View all photos button - Positioned relative to the second thumbnail */}
+                    {allImages.length > 2 && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/50 transition-colors">
+                        <button
+                          className="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-white transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsGalleryOpen(true);
+                          }}
+                        >
+                          <Camera className="h-4 w-4" />
+                          <span>View all photos</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden space-y-2">
+              {/* Main image */}
+              <div
+                className="cursor-pointer relative w-full h-[250px] sm:h-[350px] rounded-lg overflow-hidden"
+                onClick={() => openGallery(0)}
+              >
+                <img
+                  src={mainImageUrl || "/placeholder.svg"}
+                  alt={property.title}
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Mobile view gallery button */}
+                <button
+                  className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-white transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsGalleryOpen(true)
+                  }}
+                >
+                  <Camera className="h-4 w-4" />
+                  <span>View all</span>
+                </button>
+              </div>
+
+              {/* Additional images in a row for mobile */}
+              <div className="grid grid-cols-2 gap-2">
+                {/* First additional image */}
+                {allImages.filter((img) => !img.is_main)[0] && (
+                  <div
+                    className="cursor-pointer relative w-full h-[150px] rounded-lg overflow-hidden"
+                    onClick={() => openGallery(1)}
+                  >
+                    <img
                       src={allImages.filter((img) => !img.is_main)[0]?.image_url || "/placeholder.svg"}
                       alt={`${property.title} 1`}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                ) : (
-                  <div className="relative w-full h-full rounded-lg overflow-hidden">
-                    <img src="/placeholder.svg" alt="Placeholder" className="w-full h-full object-cover" />
-                  </div>
                 )}
 
-                {allImages.filter((img) => !img.is_main).length > 2 && (
-                  <button
-                    className="absolute bottom-4 right-6 bg-white/80 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-white transition-colors"
-                    onClick={() => setIsGalleryOpen(true)}
+                {/* Second additional image or view more */}
+                {allImages.filter((img) => !img.is_main)[1] ? (
+                  <div
+                    className="cursor-pointer relative w-full h-[150px] rounded-lg overflow-hidden"
+                    onClick={() => openGallery(2)}
                   >
-                    <Camera className="h-4 w-4" />
-                    <span>View all photos</span>
-                  </button>
+                    <img
+                      src={allImages.filter((img) => !img.is_main)[1]?.image_url || "/placeholder.svg"}
+                      alt={`${property.title} 2`}
+                      className="w-full h-full object-cover"
+                    />
+                    
+                    {/* View all overlay if more than 3 images total */}
+                    {allImages.length > 3 && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <button
+                          className="bg-white/90 text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsGalleryOpen(true);
+                          }}
+                        >
+                          +{allImages.length - 3} more
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // Placeholder for second image if not available
+                  <div className="w-full h-[150px] rounded-lg bg-gray-100 flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">No more images</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -549,4 +621,3 @@ export default function PropertyDetailPage() {
     </>
   )
 }
-
