@@ -73,18 +73,18 @@ export default function PropertiesPage() {
     try {
       // Parse price range
       let minPrice, maxPrice
-      if (priceRange === "₦200-₦500") {
-        minPrice = 200000
-        maxPrice = 500000
-      } else if (priceRange === "₦500-₦1000") {
-        minPrice = 500000
-        maxPrice = 1000000
-      } else if (priceRange === "₦1000-₦2000") {
-        minPrice = 1000000
-        maxPrice = 2000000
-      } else if (priceRange === "₦2000+") {
-        minPrice = 2000000
-      }
+      // if (priceRange === "₦200-₦500") {
+      //   minPrice = 200000
+      //   maxPrice = 500000
+      // } else if (priceRange === "₦500-₦1000") {
+      //   minPrice = 500000
+      //   maxPrice = 1000000
+      // } else if (priceRange === "₦1000-₦2000") {
+      //   minPrice = 1000000
+      //   maxPrice = 2000000
+      // } else if (priceRange === "₦2000+") {
+      //   minPrice = 2000000
+      // }
 
       // Create filters without pagination parameters
       const filters: PropertyFilters = {}
@@ -92,8 +92,8 @@ export default function PropertiesPage() {
       if (searchTerm) filters.search = searchTerm
       if (location !== "Lagos, Nigeria") filters.location = location
       if (propertyType !== "House") filters.property_type = propertyType.toLowerCase()
-      if (minPrice) filters.min_price = minPrice
-      if (maxPrice) filters.max_price = maxPrice
+      // if (minPrice) filters.min_price = minPrice
+      // if (maxPrice) filters.max_price = maxPrice
 
       const response = await propertiesService.getProperties(filters)
 

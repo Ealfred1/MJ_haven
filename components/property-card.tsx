@@ -145,7 +145,7 @@ export function PropertyCard({
       }}
     >
       {/* Card background with glassmorphism effect */}
-      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-lg group-hover:shadow-xl transition-all duration-300"></div>
+      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-100 transition-all duration-300"></div>
 
       {/* Card content */}
       <div className="relative z-10 p-3">
