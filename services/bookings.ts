@@ -63,7 +63,7 @@ export const bookingsService = {
   // Get all bookings
   getBookings: async (): Promise<Booking[]> => {
     const response = await api.get("/api/bookings/")
-    return response.data
+    return response.data.results
   },
 
   // Get all admin bookings
