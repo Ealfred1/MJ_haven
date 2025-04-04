@@ -18,6 +18,17 @@ export interface Booking {
   notes: string
   created_at: string
   updated_at: string
+  payments?: {
+    id: number
+    booking_id: string
+    property_title: string
+    amount: string
+    status: string
+    tx_ref: string
+    payment_reference: string | null
+    created_at: string
+    updated_at: string
+  }[]
 }
 
 export interface BookingCreateData {
@@ -41,11 +52,24 @@ export interface Payment {
   updated_at: string
 }
 
+export interface AdminBookingsResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Booking[]
+}
+
 export const bookingsService = {
   // Get all bookings
   getBookings: async (): Promise<Booking[]> => {
     const response = await api.get("/api/bookings/")
-    return response.data.results
+    return response.data
+  },
+
+  // Get all admin bookings
+  getAdminBookings: async (): Promise<AdminBookingsResponse> => {
+    const response = await api.get("/api/bookings/admin/bookings/")
+    return response.data
   },
 
   // Create a new booking
@@ -81,7 +105,7 @@ export const bookingsService = {
   // Get all transactions (paid bookings)
   getTransactions: async (): Promise<Booking[]> => {
     const response = await api.get("/api/bookings/transactions/")
-    return response.data.results
+    return response.data
   },
 }
 

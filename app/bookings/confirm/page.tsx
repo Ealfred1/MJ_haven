@@ -8,12 +8,18 @@ import { useAuth } from "@/contexts/auth-context"
 import { LoginModal } from "@/components/login-modal"
 import { SignupModal } from "@/components/signup-modal"
 import { useToast } from "@/hooks/use-toast"
-import { Calendar, Info, ArrowLeft, Check, Clock, MapPin, CreditCard } from "lucide-react"
+import { Calendar, Info, ArrowLeft, Check, Clock, MapPin, CreditCard, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { propertiesService, type Property } from "@/services/properties"
-import { bookingsService } from "@/services/bookings"
+import { bookingsService, type Booking } from "@/services/bookings"
 import { motion, AnimatePresence } from "framer-motion"
-import { differenceInDays, format, addDays } from "date-fns"
+import { differenceInDays, format, addDays, isWithinInterval, parseISO } from "date-fns"
+
+// Type for date ranges
+interface DateRange {
+  start: Date
+  end: Date
+}
 
 export default function BookingConfirmationPage() {
   const searchParams = useSearchParams()
@@ -31,10 +37,14 @@ export default function BookingConfirmationPage() {
   const [phone, setPhone] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("flutterwave")
   const [isPropertyLoading, setIsPropertyLoading] = useState(true)
+  const [isBookingsLoading, setIsBookingsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [bookingSuccess, setBookingSuccess] = useState(false)
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [minCheckOutDate, setMinCheckOutDate] = useState("")
+  const [existingBookings, setExistingBookings] = useState<Booking[]>([])
+  const [bookedDateRanges, setBookedDateRanges] = useState<DateRange[]>([])
+  const [dateError, setDateError] = useState<string | null>(null)
 
   useEffect(() => {
     // Check if user is logged in
@@ -82,8 +92,9 @@ export default function BookingConfirmationPage() {
       }
     }
 
-    // Fetch property details
+    // Fetch property details and existing bookings
     fetchPropertyDetails(propertyId)
+    fetchExistingBookings(propertyId)
   }, [searchParams, router, user])
 
   const fetchPropertyDetails = async (propertyId: string) => {
@@ -104,13 +115,85 @@ export default function BookingConfirmationPage() {
     }
   }
 
+  const fetchExistingBookings = async (propertyId: string) => {
+    setIsBookingsLoading(true)
+    try {
+      // Fetch all bookings from admin endpoint
+      const response = await bookingsService.getAdminBookings()
+
+      // Filter bookings for this specific property
+      const propertyBookings = response.results.filter(
+        (booking) => booking.property.toString() === propertyId.toString(),
+      )
+
+      setExistingBookings(propertyBookings)
+
+      // Create date ranges from bookings
+      const dateRanges = propertyBookings
+        .filter((booking) => booking.status !== "cancelled" && booking.status !== "canceled")
+        .map((booking) => ({
+          start: parseISO(booking.check_in_date),
+          end: parseISO(booking.check_out_date),
+        }))
+
+      setBookedDateRanges(dateRanges)
+    } catch (error) {
+      console.error("Failed to fetch existing bookings:", error)
+      toast({
+        title: "Warning",
+        description: "Could not check date availability. Some dates might be unavailable.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsBookingsLoading(false)
+    }
+  }
+
+  // Check if a date is already booked
+  const isDateBooked = (date: Date): boolean => {
+    return bookedDateRanges.some((range) => isWithinInterval(date, { start: range.start, end: range.end }))
+  }
+
+  // Check if a date range overlaps with existing bookings
+  const isDateRangeAvailable = (startDate: Date, endDate: Date): boolean => {
+    // Check if any day in the range is already booked
+    let currentDate = new Date(startDate)
+    while (currentDate < endDate) {
+      if (isDateBooked(currentDate)) {
+        return false
+      }
+      currentDate = addDays(currentDate, 1)
+    }
+    return true
+  }
+
+  // Find conflicting booking for error message
+  const findConflictingBooking = (startDate: Date, endDate: Date): Booking | null => {
+    for (const booking of existingBookings) {
+      const bookingStart = parseISO(booking.check_in_date)
+      const bookingEnd = parseISO(booking.check_out_date)
+
+      // Check if there's any overlap
+      if (
+        startDate <= bookingEnd &&
+        endDate >= bookingStart &&
+        booking.status !== "cancelled" &&
+        booking.status !== "canceled"
+      ) {
+        return booking
+      }
+    }
+    return null
+  }
+
   // Update nights and min check-out date when check-in date changes
   useEffect(() => {
     if (checkInDate) {
       const nextDay = addDays(new Date(checkInDate), 1)
       setMinCheckOutDate(format(nextDay, "yyyy-MM-dd"))
+      setDateError(null)
 
-      // If check-out date is already set, recalculate nights
+      // If check-out date is already set, recalculate nights and validate
       if (checkOutDate) {
         const start = new Date(checkInDate)
         const end = new Date(checkOutDate)
@@ -118,13 +201,28 @@ export default function BookingConfirmationPage() {
         if (end > start) {
           const days = differenceInDays(end, start)
           setNights(days)
+
+          // Check if the selected date range is available
+          if (!isDateRangeAvailable(start, end)) {
+            const conflictingBooking = findConflictingBooking(start, end)
+            if (conflictingBooking) {
+              const conflictStart = format(parseISO(conflictingBooking.check_in_date), "MMMM d, yyyy")
+              const conflictEnd = format(parseISO(conflictingBooking.check_out_date), "MMMM d, yyyy")
+              setDateError(
+                `This property is already booked from ${conflictStart} to ${conflictEnd}. Please select different dates.`,
+              )
+            } else {
+              setDateError("The selected dates are not available. Please choose different dates.")
+            }
+          }
         } else {
           // If check-out is before or same as check-in, reset check-out
           setCheckOutDate("")
+          setDateError("Check-out date must be after check-in date.")
         }
       }
     }
-  }, [checkInDate])
+  }, [checkInDate, checkOutDate, existingBookings])
 
   // Update nights when check-out date changes
   useEffect(() => {
@@ -135,9 +233,25 @@ export default function BookingConfirmationPage() {
       if (end > start) {
         const days = differenceInDays(end, start)
         setNights(days)
+
+        // Check if the selected date range is available
+        if (!isDateRangeAvailable(start, end)) {
+          const conflictingBooking = findConflictingBooking(start, end)
+          if (conflictingBooking) {
+            const conflictStart = format(parseISO(conflictingBooking.check_in_date), "MMMM d, yyyy")
+            const conflictEnd = format(parseISO(conflictingBooking.check_out_date), "MMMM d, yyyy")
+            setDateError(
+              `This property is already booked from ${conflictStart} to ${conflictEnd}. Please select different dates.`,
+            )
+          } else {
+            setDateError("The selected dates are not available. Please choose different dates.")
+          }
+        } else {
+          setDateError(null)
+        }
       }
     }
-  }, [checkOutDate, checkInDate])
+  }, [checkOutDate, checkInDate, existingBookings])
 
   const handlePayNow = async () => {
     if (!checkInDate || !checkOutDate || !fullName || !email || !phone) {
@@ -153,6 +267,16 @@ export default function BookingConfirmationPage() {
       toast({
         title: "Error",
         description: "Property details not available",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Check for date conflicts before proceeding
+    if (dateError) {
+      toast({
+        title: "Booking Error",
+        description: dateError,
         variant: "destructive",
       })
       return
@@ -187,12 +311,25 @@ export default function BookingConfirmationPage() {
       } else {
         throw new Error("Payment link not received")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Booking failed:", error)
-      setBookingError(typeof error === "string" ? error : "Failed to create booking. Please try again.")
+
+      // Extract error message from response if available
+      let errorMessage = "Failed to create booking. Please try again."
+
+      if (error.response?.data?.non_field_errors) {
+        errorMessage = error.response.data.non_field_errors[0]
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      } else if (typeof error === "string") {
+        errorMessage = error
+      }
+
+      setBookingError(errorMessage)
+
       toast({
         title: "Booking Failed",
-        description: "There was an error processing your booking. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -225,8 +362,8 @@ export default function BookingConfirmationPage() {
     // Round to 2 decimal places
     basePrice = Math.round(basePrice * 100) / 100
 
-    // Calculate tax (5% of base price)
-    const tax = basePrice * 0.20
+    // Calculate tax (20% of base price)
+    const tax = basePrice * 0.2
 
     // Calculate total
     const total = basePrice + tax
@@ -253,7 +390,7 @@ export default function BookingConfirmationPage() {
     return format(new Date(dateString), "MMMM d, yyyy")
   }
 
-  if (isPropertyLoading) {
+  if (isPropertyLoading || isBookingsLoading) {
     return (
       <>
         <Navigation />
@@ -316,7 +453,9 @@ export default function BookingConfirmationPage() {
                         value={checkInDate}
                         min={format(new Date(), "yyyy-MM-dd")}
                         onChange={(e) => setCheckInDate(e.target.value)}
-                        className="w-full px-4 py-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                        className={`w-full px-4 py-3 pl-10 border ${
+                          dateError ? "border-red-300" : "border-gray-200"
+                        } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200`}
                         required
                       />
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -334,13 +473,22 @@ export default function BookingConfirmationPage() {
                         value={checkOutDate}
                         min={minCheckOutDate}
                         onChange={(e) => setCheckOutDate(e.target.value)}
-                        className="w-full px-4 py-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+                        className={`w-full px-4 py-3 pl-10 border ${
+                          dateError ? "border-red-300" : "border-gray-200"
+                        } rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200`}
                         required
                       />
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     </div>
                   </div>
                 </div>
+
+                {dateError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">{dateError}</p>
+                  </div>
+                )}
 
                 <div className="mb-4">
                   <label htmlFor="full-name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -495,7 +643,7 @@ export default function BookingConfirmationPage() {
                         <span>{formatPrice(basePrice)}</span>
                       </div>
                       <div className="flex justify-between mb-4">
-                        <span>Tax (5%)</span>
+                        <span>Tax (20%)</span>
                         <span>{formatPrice(tax)}</span>
                       </div>
                       <div className="flex justify-between font-bold border-t pt-2">
@@ -521,16 +669,17 @@ export default function BookingConfirmationPage() {
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+                          className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2"
                         >
-                          <p className="text-red-700">{bookingError}</p>
+                          <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                          <p className="text-sm text-red-700">{bookingError}</p>
                         </motion.div>
                       ) : (
                         <motion.button
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={handlePayNow}
-                          disabled={isSubmitting || !checkInDate || !checkOutDate}
+                          disabled={isSubmitting || !checkInDate || !checkOutDate || !!dateError}
                           className="w-full bg-primary hover:bg-primary-600 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                           {isSubmitting ? (
