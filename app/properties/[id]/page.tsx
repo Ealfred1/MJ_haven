@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
-import { ArrowLeft, Bed, Bath, Square, Heart, Share2, Zap, Camera } from "lucide-react"
+import { ArrowLeft, Bed, Bath, Square, Heart, Share2, Zap, Camera, Play } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { LoginModal } from "@/components/login-modal"
 import { SignupModal } from "@/components/signup-modal"
@@ -179,7 +179,20 @@ export default function PropertyDetailPage() {
   const mainImageUrl =
     property.main_image_url || (allImages.length > 0 ? allImages[0].image_url : "/placeholder.svg?height=600&width=800")
 
-  // Create an array of all image URLs for the gallery
+  // Create an array of media items (images and videos) for the gallery
+  const galleryMedia = [
+    { type: "image" as const, url: mainImageUrl },
+    ...allImages.filter((img) => !img.is_main).map((img) => ({ type: "image" as const, url: img.image_url })),
+  ]
+
+  // Add videos to the gallery media if they exist
+  if (property.videos && property.videos.length > 0) {
+    property.videos.forEach((video) => {
+      galleryMedia.push({ type: "video" as const, url: video.video_url })
+    })
+  }
+
+  // Legacy format for backward compatibility
   const galleryImages = [mainImageUrl, ...allImages.filter((img) => !img.is_main).map((img) => img.image_url)]
 
   // Get the currently displayed main image based on selected thumbnail
@@ -187,6 +200,9 @@ export default function PropertyDetailPage() {
     selectedThumbnailIndex === 0
       ? mainImageUrl
       : allImages.filter((img) => !img.is_main)[selectedThumbnailIndex - 1]?.image_url || mainImageUrl
+
+  // Check if we have videos
+  const hasVideos = property.videos && property.videos.length > 0
 
   return (
     <>
@@ -280,37 +296,53 @@ export default function PropertyDetailPage() {
                     />
                   </div>
 
-                  {/* Second thumbnail */}
-                  <div
-                    className={`cursor-pointer relative w-full h-full rounded-lg overflow-hidden ${
-                      selectedThumbnailIndex === 1 ? "ring-2 ring-primary" : ""
-                    }`}
-                    onClick={() => handleThumbnailClick(1)}
-                  >
-                    <img
-                      src={
-                        allImages.filter((img) => !img.is_main)[0]?.image_url || "/placeholder.svg?height=200&width=300"
-                      }
-                      alt={`${property.title} 1`}
-                      className="w-full h-full object-cover"
-                    />
-                    
-                    {/* View all photos button - Positioned relative to the second thumbnail */}
-                    {allImages.length > 2 && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/50 transition-colors">
-                        <button
-                          className="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-white transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setIsGalleryOpen(true);
-                          }}
-                        >
-                          <Camera className="h-4 w-4" />
-                          <span>View all photos</span>
-                        </button>
+                  {/* Second thumbnail or video */}
+                  {hasVideos ? (
+                    <div
+                      className="cursor-pointer relative w-full h-full rounded-lg overflow-hidden"
+                      onClick={() => openGallery(allImages.length)}
+                    >
+                      <div className="relative w-full h-full">
+                        <video src={property.videos[0].video_url} className="w-full h-full object-cover" muted />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                          <Play className="h-12 w-12 text-white opacity-80" />
+                        </div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : allImages.filter((img) => !img.is_main)[0] ? (
+                    <div
+                      className={`cursor-pointer relative w-full h-full rounded-lg overflow-hidden ${
+                        selectedThumbnailIndex === 1 ? "ring-2 ring-primary" : ""
+                      }`}
+                      onClick={() => handleThumbnailClick(1)}
+                    >
+                      <img
+                        src={
+                          allImages.filter((img) => !img.is_main)[0]?.image_url ||
+                          "/placeholder.svg?height=200&width=300"
+                        }
+                        alt={`${property.title} 1`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full h-full rounded-lg bg-gray-100 flex items-center justify-center">
+                      <span className="text-gray-400 text-sm">No more images</span>
+                    </div>
+                  )}
+
+                  {/* View all photos button - Positioned relative to the second thumbnail */}
+                  {(allImages.length > 2 || hasVideos) && (
+                    <div className="absolute bottom-4 right-4">
+                      <button
+                        className="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-white transition-colors"
+                        onClick={() => setIsGalleryOpen(true)}
+                      >
+                        <Camera className="h-4 w-4" />
+                        <span>View all media</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -341,10 +373,22 @@ export default function PropertyDetailPage() {
                 </button>
               </div>
 
-              {/* Additional images in a row for mobile */}
+              {/* Additional images and video in a row for mobile */}
               <div className="grid grid-cols-2 gap-2">
-                {/* First additional image */}
-                {allImages.filter((img) => !img.is_main)[0] && (
+                {/* First additional image or video */}
+                {hasVideos ? (
+                  <div
+                    className="cursor-pointer relative w-full h-[150px] rounded-lg overflow-hidden"
+                    onClick={() => openGallery(allImages.length)}
+                  >
+                    <div className="relative w-full h-full">
+                      <video src={property.videos[0].video_url} className="w-full h-full object-cover" muted />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <Play className="h-10 w-10 text-white opacity-80" />
+                      </div>
+                    </div>
+                  </div>
+                ) : allImages.filter((img) => !img.is_main)[0] ? (
                   <div
                     className="cursor-pointer relative w-full h-[150px] rounded-lg overflow-hidden"
                     onClick={() => openGallery(1)}
@@ -354,6 +398,10 @@ export default function PropertyDetailPage() {
                       alt={`${property.title} 1`}
                       className="w-full h-full object-cover"
                     />
+                  </div>
+                ) : (
+                  <div className="w-full h-[150px] rounded-lg bg-gray-100 flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">No more images</span>
                   </div>
                 )}
 
@@ -368,18 +416,18 @@ export default function PropertyDetailPage() {
                       alt={`${property.title} 2`}
                       className="w-full h-full object-cover"
                     />
-                    
-                    {/* View all overlay if more than 3 images total */}
-                    {allImages.length > 3 && (
+
+                    {/* View all overlay if more than 3 images total or has videos */}
+                    {(allImages.length > 3 || (hasVideos && allImages.length > 2)) && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                         <button
                           className="bg-white/90 text-gray-800 px-3 py-1.5 rounded-md text-sm font-medium"
                           onClick={(e) => {
-                            e.stopPropagation();
-                            setIsGalleryOpen(true);
+                            e.stopPropagation()
+                            setIsGalleryOpen(true)
                           }}
                         >
-                          +{allImages.length - 3} more
+                          +{allImages.length - 3 + (hasVideos ? property.videos.length : 0)} more
                         </button>
                       </div>
                     )}
@@ -387,7 +435,7 @@ export default function PropertyDetailPage() {
                 ) : (
                   // Placeholder for second image if not available
                   <div className="w-full h-[150px] rounded-lg bg-gray-100 flex items-center justify-center">
-                    <span className="text-gray-400 text-sm">No more images</span>
+                    <span className="text-gray-400 text-sm">No more media</span>
                   </div>
                 )}
               </div>
@@ -595,6 +643,7 @@ export default function PropertyDetailPage() {
 
       {/* Image Gallery Modal */}
       <ImageGallery
+        media={galleryMedia}
         images={galleryImages}
         isOpen={isGalleryOpen}
         initialIndex={galleryInitialIndex}
@@ -621,3 +670,4 @@ export default function PropertyDetailPage() {
     </>
   )
 }
+
